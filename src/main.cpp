@@ -11,6 +11,7 @@ using namespace std;
 
 void Welcome();
 void openFile(ifstream& file);
+int getInteger();
 int getRunTime();
 void initiGraph(SimpleGraph& graph);
 void circleNode(SimpleGraph &graph, ifstream &file);
@@ -21,11 +22,12 @@ int main() {
     /* TODO: your implementation here */
 //    ifstream file;
 //    openFile(file);
-//    int runTime = getRunTime();
-    ifstream file("10grid");
-    SimpleGraph graph;
-    circleNode(graph, file);
-    DrawGraph(graph);
+    int runTime = getRunTime();
+//    ifstream file("10grid");
+//    SimpleGraph graph;
+//    circleNode(graph, file);
+//    DrawGraph(graph);
+    cout << runTime << endl;
     return 0;
 }
 
@@ -56,11 +58,14 @@ void openFile(ifstream& file) {
 }
 
 int getRunTime() {
+    cout << "How long do you want to run the program in microseconds?" << endl;
+    return getInteger();
+}
+
+int getInteger() {
     string input;
     int num;
     char rest;
-
-    cout << "How long do you want to run the program in microseconds?" << endl;
 
     while (true) {
         if (!getline(cin, input)) {
@@ -74,7 +79,6 @@ int getRunTime() {
         }
         cout << "Retry: ";
     }
-
 }
 
 void initiGraph(SimpleGraph& graph) {
@@ -96,6 +100,4 @@ void circleNode(SimpleGraph& graph, ifstream& file) {
         node.y = positionY;
         graph.nodes.push_back(node);
     }
-
-
 }
