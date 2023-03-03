@@ -6,29 +6,39 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <chrono> // fancy timers
 
 using namespace std;
 
 void Welcome();
-void openFile(ifstream& file);
+void openFile(ifstream &file);
 int getInteger();
 int getRunTime();
-void initiGraph(SimpleGraph& graph);
+void initGraph(SimpleGraph &graph);
 void circleNode(SimpleGraph &graph, ifstream &file);
 void addEdges(SimpleGraph &graph, ifstream &file);
+void updateGraph(SimpleGraph &graph);
 
 // Main method
 int main() {
     Welcome();
     /* TODO: your implementation here */
-//    ifstream file;
-//    openFile(file);
-//    int runTime = getRunTime();
-    ifstream file("10line");
     SimpleGraph graph;
-    circleNode(graph, file);
-    addEdges(graph, file);
-    DrawGraph(graph);
+    initGraph(graph);
+    int runTime = getRunTime();
+
+    auto startTime = std::chrono::high_resolution_clock::now();
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+    int milliseconds = elapsedTime.count();
+
+    while (milliseconds < runTime) {
+        updateGraph(graph);
+        DrawGraph(graph);
+        endTime = std::chrono::high_resolution_clock::now();
+        elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+        milliseconds = elapsedTime.count();
+    }
 //    cout << runTime << endl;
     return 0;
 }
@@ -42,7 +52,7 @@ void Welcome() {
     cout << endl;
 }
 
-void openFile(ifstream& file) {
+void openFile(ifstream &file) {
     cout << "Please enter your file name: ";
     string fileName;
     while (true) {
@@ -83,12 +93,14 @@ int getInteger() {
     }
 }
 
-void initiGraph(SimpleGraph& graph) {
-
-
+void initGraph(SimpleGraph &graph) {
+    ifstream file;
+    openFile(file);
+    circleNode(graph, file);
+    addEdges(graph, file);
 }
 
-void circleNode(SimpleGraph& graph, ifstream& file) {
+void circleNode(SimpleGraph &graph, ifstream &file) {
     const double kPi = 3.14159265358979323;
 
     int nodeNum;
@@ -104,7 +116,7 @@ void circleNode(SimpleGraph& graph, ifstream& file) {
     }
 }
 
-void addEdges(SimpleGraph& graph, ifstream& file) {
+void addEdges(SimpleGraph &graph, ifstream &file) {
     size_t nodeIndex1, nodeIndex2;
     while (file >> nodeIndex1 >> nodeIndex2) {
         Edge edge;
@@ -112,4 +124,8 @@ void addEdges(SimpleGraph& graph, ifstream& file) {
         edge.end = nodeIndex2;
         graph.edges.push_back(edge);
     }
+}
+
+void updateGraph(SimpleGraph &graph) {
+
 }
