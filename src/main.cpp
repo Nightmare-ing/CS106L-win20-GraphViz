@@ -17,29 +17,41 @@ int getRunTime();
 void initGraph(SimpleGraph &graph);
 void circleNode(SimpleGraph &graph, ifstream &file);
 void addEdges(SimpleGraph &graph, ifstream &file);
-void updateGraph(SimpleGraph &graph);
+void updatePosi(SimpleGraph &graph);
+void computeAttrForce(SimpleGraph &graph, vector<pair<double, double>> &forceList);
+void computeRepuForce(SimpleGraph &graph, vector<pair<double, double>> &forceList);
+
 
 // Main method
 int main() {
     Welcome();
     /* TODO: your implementation here */
-    SimpleGraph graph;
-    initGraph(graph);
-    int runTime = getRunTime();
+    string userInput = "yes";
 
-    auto startTime = std::chrono::high_resolution_clock::now();
-    auto endTime = std::chrono::high_resolution_clock::now();
-    auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-    int milliseconds = elapsedTime.count();
+    while (userInput == "yes") {
+        SimpleGraph graph;
+        InitGraphVisualizer(graph);
 
-    while (milliseconds < runTime) {
-        updateGraph(graph);
-        DrawGraph(graph);
-        endTime = std::chrono::high_resolution_clock::now();
-        elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-        milliseconds = elapsedTime.count();
+        initGraph(graph);
+        int runTime = getRunTime();
+
+        auto startTime = std::chrono::high_resolution_clock::now();
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+        int milliseconds = elapsedTime.count();
+
+        while (milliseconds < runTime) {
+            updatePosi(graph);
+            DrawGraph(graph);
+            endTime = std::chrono::high_resolution_clock::now();
+            elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+            milliseconds = elapsedTime.count();
+        }
+
+        cout << "Do you want to try another file?" << endl;
+        getline(cin, userInput);
     }
-//    cout << runTime << endl;
+
     return 0;
 }
 
@@ -101,14 +113,14 @@ void initGraph(SimpleGraph &graph) {
 }
 
 void circleNode(SimpleGraph &graph, ifstream &file) {
-    const double kPi = 3.14159265358979323;
+    const double KPI = 3.14159265358979323;
 
     int nodeNum;
     file >> nodeNum;
 
     for (int i = 0; i < nodeNum; ++i) {
-        double positionX = cos(2 * kPi * i / nodeNum);
-        double positionY = sin(2 * kPi * i / nodeNum);
+        double positionX = cos(2 * KPI * i / nodeNum);
+        double positionY = sin(2 * KPI * i / nodeNum);
         Node node;
         node.x = positionX;
         node.y = positionY;
@@ -126,6 +138,63 @@ void addEdges(SimpleGraph &graph, ifstream &file) {
     }
 }
 
-void updateGraph(SimpleGraph &graph) {
+void updatePosi(SimpleGraph &graph) {
+    int nodesNum = graph.nodes.size();
+    auto nodesAttrForce = vector(nodesNum, make_pair(0.0, 0.0));
+    auto nodesRepelForce = vector(nodesNum, make_pair(0.0, 0.0));
+    computeAttrForce(graph, nodesAttrForce);
+    computeRepuForce(graph, nodesRepelForce);
 
+    for (int i = 0; i < nodesNum; ++i) {
+        auto [attrPosiX, attrPosiY] = nodesAttrForce[i];
+        auto [repelPosiX, repelPosiY] = nodesRepelForce[i];
+        graph.nodes[i].x += attrPosiX + repelPosiX;
+        graph.nodes[i].y += attrPosiY + repelPosiY;
+    }
+}
+
+void computeAttrForce(SimpleGraph &graph, vector<pair<double, double>> &forceList) {
+    const double KATTRACT = 0.001;
+    for (auto edge : graph.edges) {
+        const auto &firstNode = graph.nodes[edge.start];
+        const auto &secNode = graph.nodes[edge.end];
+        double attractF = KATTRACT * (pow(secNode.y - firstNode.y, 2)
+                                      + pow(firstNode.x - secNode.x, 2) );
+        double theta = atan2(secNode.y - firstNode.y, secNode.x - firstNode.x);
+
+        double delta_x0 = attractF * cos(theta);
+        double delta_y0 = attractF * sin(theta);
+        double delta_x1 = -attractF * cos(theta);
+        double delta_y1 = -attractF * sin(theta);
+
+        forceList[edge.start].first += delta_x0;
+        forceList[edge.start].second += delta_y0;
+        forceList[edge.end].first += delta_x1;
+        forceList[edge.end].second += delta_y1;
+
+    }
+}
+
+void computeRepuForce(SimpleGraph &graph, vector<pair<double, double>> &forceList) {
+    const double KREPEL = 0.001;
+    int nodesNum = graph.nodes.size();
+    for (int i = 0; i < nodesNum; ++i) {
+        for (int j = i+1; j < nodesNum; ++j) {
+            auto &firstNode = graph.nodes[i];
+            auto &secNode = graph.nodes[j];
+            double repelF = KREPEL / sqrt(pow(secNode.y - firstNode.y, 2)
+                                          + pow(secNode.x - firstNode.x, 2));
+            double theta = atan2(secNode.y - firstNode.y, secNode.x - firstNode.x);
+
+            double delta_x0 = -repelF * cos(theta);
+            double delta_y0 = -repelF * sin(theta);
+            double delta_x1 = repelF * cos(theta);
+            double delta_y1 = repelF * sin(theta);
+
+            forceList[i].first += delta_x0;
+            forceList[i].second += delta_y0;
+            forceList[j].first += delta_x1;
+            forceList[j].second += delta_y1;
+        }
+    }
 }
