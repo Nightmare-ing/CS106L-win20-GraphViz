@@ -18,8 +18,8 @@ void initGraph(SimpleGraph &graph);
 void circleNode(SimpleGraph &graph, ifstream &file);
 void addEdges(SimpleGraph &graph, ifstream &file);
 void updatePosi(SimpleGraph &graph);
-void computeAttrForce(SimpleGraph &graph, vector<pair<double, double>> &forceList);
-void computeRepuForce(SimpleGraph &graph, vector<pair<double, double>> &forceList);
+void computeAttrDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &deltaPosiList);
+void computeRepuDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &deltaPosiList);
 
 
 // Main method
@@ -140,20 +140,20 @@ void addEdges(SimpleGraph &graph, ifstream &file) {
 
 void updatePosi(SimpleGraph &graph) {
     int nodesNum = graph.nodes.size();
-    auto nodesAttrForce = vector(nodesNum, make_pair(0.0, 0.0));
-    auto nodesRepelForce = vector(nodesNum, make_pair(0.0, 0.0));
-    computeAttrForce(graph, nodesAttrForce);
-    computeRepuForce(graph, nodesRepelForce);
+    auto nodesAttrDeltaPosi = vector(nodesNum, make_pair(0.0, 0.0));
+    auto nodesRepulDeltaPosi = vector(nodesNum, make_pair(0.0, 0.0));
+    computeAttrDeltaPosi(graph, nodesAttrDeltaPosi);
+    computeRepuDeltaPosi(graph, nodesRepulDeltaPosi);
 
     for (int i = 0; i < nodesNum; ++i) {
-        auto [attrPosiX, attrPosiY] = nodesAttrForce[i];
-        auto [repelPosiX, repelPosiY] = nodesRepelForce[i];
+        auto [attrPosiX, attrPosiY] = nodesAttrDeltaPosi[i];
+        auto [repelPosiX, repelPosiY] = nodesRepulDeltaPosi[i];
         graph.nodes[i].x += attrPosiX + repelPosiX;
         graph.nodes[i].y += attrPosiY + repelPosiY;
     }
 }
 
-void computeAttrForce(SimpleGraph &graph, vector<pair<double, double>> &forceList) {
+void computeAttrDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &deltaPosiList) {
     const double KATTRACT = 0.001;
     for (auto edge : graph.edges) {
         const auto &firstNode = graph.nodes[edge.start];
@@ -167,15 +167,15 @@ void computeAttrForce(SimpleGraph &graph, vector<pair<double, double>> &forceLis
         double delta_x1 = -attractF * cos(theta);
         double delta_y1 = -attractF * sin(theta);
 
-        forceList[edge.start].first += delta_x0;
-        forceList[edge.start].second += delta_y0;
-        forceList[edge.end].first += delta_x1;
-        forceList[edge.end].second += delta_y1;
+        deltaPosiList[edge.start].first += delta_x0;
+        deltaPosiList[edge.start].second += delta_y0;
+        deltaPosiList[edge.end].first += delta_x1;
+        deltaPosiList[edge.end].second += delta_y1;
 
     }
 }
 
-void computeRepuForce(SimpleGraph &graph, vector<pair<double, double>> &forceList) {
+void computeRepuDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &deltaPosiList) {
     const double KREPEL = 0.001;
     int nodesNum = graph.nodes.size();
     for (int i = 0; i < nodesNum; ++i) {
@@ -191,10 +191,10 @@ void computeRepuForce(SimpleGraph &graph, vector<pair<double, double>> &forceLis
             double delta_x1 = repelF * cos(theta);
             double delta_y1 = repelF * sin(theta);
 
-            forceList[i].first += delta_x0;
-            forceList[i].second += delta_y0;
-            forceList[j].first += delta_x1;
-            forceList[j].second += delta_y1;
+            deltaPosiList[i].first += delta_x0;
+            deltaPosiList[i].second += delta_y0;
+            deltaPosiList[j].first += delta_x1;
+            deltaPosiList[j].second += delta_y1;
         }
     }
 }
