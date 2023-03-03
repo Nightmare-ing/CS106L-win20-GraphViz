@@ -5,12 +5,15 @@
 #include "SimpleGraph.h"
 #include <fstream>
 #include <sstream>
+#include <cmath>
 
 using namespace std;
 
 void Welcome();
 void openFile(ifstream& file);
 int getRunTime();
+void initiGraph(SimpleGraph& graph);
+void circleNode(SimpleGraph &graph, ifstream &file);
 
 // Main method
 int main() {
@@ -18,8 +21,11 @@ int main() {
     /* TODO: your implementation here */
 //    ifstream file;
 //    openFile(file);
-    int a = getRunTime();
-    cout << a << endl;
+//    int runTime = getRunTime();
+    ifstream file("10grid");
+    SimpleGraph graph;
+    circleNode(graph, file);
+    DrawGraph(graph);
     return 0;
 }
 
@@ -54,6 +60,8 @@ int getRunTime() {
     int num;
     char rest;
 
+    cout << "How long do you want to run the program in microseconds?" << endl;
+
     while (true) {
         if (!getline(cin, input)) {
             cout << "can't read your input, please check!" << endl;
@@ -66,5 +74,28 @@ int getRunTime() {
         }
         cout << "Retry: ";
     }
+
+}
+
+void initiGraph(SimpleGraph& graph) {
+
+
+}
+
+void circleNode(SimpleGraph& graph, ifstream& file) {
+    const double kPi = 3.14159265358979323;
+
+    int nodeNum;
+    file >> nodeNum;
+
+    for (int i = 0; i < nodeNum; ++i) {
+        double positionX = cos(2 * kPi * i / nodeNum);
+        double positionY = sin(2 * kPi * i / nodeNum);
+        Node node;
+        node.x = positionX;
+        node.y = positionY;
+        graph.nodes.push_back(node);
+    }
+
 
 }
