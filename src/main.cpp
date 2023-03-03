@@ -15,6 +15,7 @@ int getInteger();
 int getRunTime();
 void initiGraph(SimpleGraph& graph);
 void circleNode(SimpleGraph &graph, ifstream &file);
+void addEdges(SimpleGraph &graph, ifstream &file);
 
 // Main method
 int main() {
@@ -22,12 +23,13 @@ int main() {
     /* TODO: your implementation here */
 //    ifstream file;
 //    openFile(file);
-    int runTime = getRunTime();
-//    ifstream file("10grid");
-//    SimpleGraph graph;
-//    circleNode(graph, file);
-//    DrawGraph(graph);
-    cout << runTime << endl;
+//    int runTime = getRunTime();
+    ifstream file("10line");
+    SimpleGraph graph;
+    circleNode(graph, file);
+    addEdges(graph, file);
+    DrawGraph(graph);
+//    cout << runTime << endl;
     return 0;
 }
 
@@ -99,5 +101,15 @@ void circleNode(SimpleGraph& graph, ifstream& file) {
         node.x = positionX;
         node.y = positionY;
         graph.nodes.push_back(node);
+    }
+}
+
+void addEdges(SimpleGraph& graph, ifstream& file) {
+    size_t nodeIndex1, nodeIndex2;
+    while (file >> nodeIndex1 >> nodeIndex2) {
+        Edge edge;
+        edge.start = nodeIndex1;
+        edge.end = nodeIndex2;
+        graph.edges.push_back(edge);
     }
 }
