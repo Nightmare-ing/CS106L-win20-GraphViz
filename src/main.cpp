@@ -7,19 +7,20 @@
 #include <sstream>
 #include <cmath>
 #include <chrono> // fancy timers
+#include <thread>
 
 using namespace std;
 
 void Welcome();
-void openFile(ifstream &file);
+void openFile(ifstream& file);
 int getInteger();
 int getRunTime();
-void initGraph(SimpleGraph &graph);
-void circleNode(SimpleGraph &graph, ifstream &file);
-void addEdges(SimpleGraph &graph, ifstream &file);
-void updatePosi(SimpleGraph &graph);
-void computeAttrDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &deltaPosiList);
-void computeRepuDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &deltaPosiList);
+void initGraph(SimpleGraph& graph);
+void circleNode(SimpleGraph& graph, ifstream& file);
+void addEdges(SimpleGraph& graph, ifstream& file);
+void updatePosi(SimpleGraph& graph);
+void computeAttrDeltaPosi(SimpleGraph& graph, vector<pair<double, double>>& deltaPosiList);
+void computeRepuDeltaPosi(SimpleGraph& graph, vector<pair<double, double>>& deltaPosiList);
 
 
 // Main method
@@ -37,19 +38,25 @@ int main() {
 
         auto startTime = std::chrono::high_resolution_clock::now();
         auto endTime = std::chrono::high_resolution_clock::now();
-        auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        std::chrono::microseconds dura(1000);
         int milliseconds = elapsedTime.count();
 
         while (milliseconds < runTime) {
             updatePosi(graph);
             DrawGraph(graph);
+            std::this_thread::sleep_for(dura);
             endTime = std::chrono::high_resolution_clock::now();
-            elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+            elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
             milliseconds = elapsedTime.count();
         }
 
         cout << "Do you want to try another file?" << endl;
         getline(cin, userInput);
+        while (userInput != "yes" && userInput != "no") {
+            cout << "unknown instruction, please type \"yes\" or \"no\":" << endl;
+            getline(cin, userInput);
+        }
     }
 
     return 0;
@@ -64,7 +71,7 @@ void Welcome() {
     cout << endl;
 }
 
-void openFile(ifstream &file) {
+void openFile(ifstream& file) {
     cout << "Please enter your file name: ";
     string fileName;
     while (true) {
@@ -105,14 +112,14 @@ int getInteger() {
     }
 }
 
-void initGraph(SimpleGraph &graph) {
+void initGraph(SimpleGraph& graph) {
     ifstream file;
     openFile(file);
     circleNode(graph, file);
     addEdges(graph, file);
 }
 
-void circleNode(SimpleGraph &graph, ifstream &file) {
+void circleNode(SimpleGraph& graph, ifstream& file) {
     const double KPI = 3.14159265358979323;
 
     int nodeNum;
@@ -128,7 +135,7 @@ void circleNode(SimpleGraph &graph, ifstream &file) {
     }
 }
 
-void addEdges(SimpleGraph &graph, ifstream &file) {
+void addEdges(SimpleGraph& graph, ifstream& file) {
     size_t nodeIndex1, nodeIndex2;
     while (file >> nodeIndex1 >> nodeIndex2) {
         Edge edge;
@@ -138,7 +145,7 @@ void addEdges(SimpleGraph &graph, ifstream &file) {
     }
 }
 
-void updatePosi(SimpleGraph &graph) {
+void updatePosi(SimpleGraph& graph) {
     int nodesNum = graph.nodes.size();
     auto nodesAttrDeltaPosi = vector(nodesNum, make_pair(0.0, 0.0));
     auto nodesRepulDeltaPosi = vector(nodesNum, make_pair(0.0, 0.0));
@@ -148,12 +155,12 @@ void updatePosi(SimpleGraph &graph) {
     for (int i = 0; i < nodesNum; ++i) {
         auto [attrPosiX, attrPosiY] = nodesAttrDeltaPosi[i];
         auto [repelPosiX, repelPosiY] = nodesRepulDeltaPosi[i];
-        graph.nodes[i].x += attrPosiX + repelPosiX;
-        graph.nodes[i].y += attrPosiY + repelPosiY;
+        graph.nodes[i].x = graph.nodes[i].x + attrPosiX + repelPosiX;
+        graph.nodes[i].y = graph.nodes[i].y + attrPosiY + repelPosiY;
     }
 }
 
-void computeAttrDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &deltaPosiList) {
+void computeAttrDeltaPosi(SimpleGraph& graph, vector<pair<double, double>>& deltaPosiList) {
     const double KATTRACT = 0.001;
     for (auto edge : graph.edges) {
         const auto &firstNode = graph.nodes[edge.start];
@@ -175,7 +182,7 @@ void computeAttrDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &delt
     }
 }
 
-void computeRepuDeltaPosi(SimpleGraph &graph, vector<pair<double, double>> &deltaPosiList) {
+void computeRepuDeltaPosi(SimpleGraph& graph, vector<pair<double, double>>& deltaPosiList) {
     const double KREPEL = 0.001;
     int nodesNum = graph.nodes.size();
     for (int i = 0; i < nodesNum; ++i) {
