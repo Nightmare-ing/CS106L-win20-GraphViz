@@ -107,6 +107,7 @@ int getInteger() {
             return num;
         } else {
             cout << "Invalid input!" << endl;
+            // here don't have to clear the CONVERTER stream, because for every iteration, the CONVERTER is renewed
         }
         cout << "Retry: ";
     }
